@@ -1,4 +1,4 @@
-"""Data Processor Module."""
+"""Data Processor Module for Ice Hockey."""
 import pandas as pd
 import numpy as np
 import math
@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 
 
 class DataProcessor:
-    """Processes tracking data."""
+    """Processes tracking data for ice hockey."""
     
     def __init__(self, config, fps: int):
         self.config = config
@@ -23,13 +23,15 @@ class DataProcessor:
         if df.empty:
             return df, team_mapping
         
-        if "Ball" in df.columns:
-            df = self._interpolate(df, "Ball", fill=True)
+        # Interpolate puck positions
+        if "Puck" in df.columns:
+            df = self._interpolate(df, "Puck", fill=True)
         
         df, team_mapping = self._merge_ids(df, team_mapping)
         
+        # Interpolate and smooth player/goaltender positions
         for col in df.columns:
-            if col != "Ball":
+            if col != "Puck":
                 df = self._interpolate(df, col, fill=False)
                 if self.config.smooth:
                     df = self._smooth(df, col)
@@ -43,7 +45,8 @@ class DataProcessor:
             frame_data = {}
             has_person = False
             
-            for cls in ["Player", "Goalkeeper"]:
+            # Process players and goaltenders
+            for cls in ["Player", "Goaltender"]:
                 if cls not in dets:
                     continue
                 for oid, det in dets[cls].items():
@@ -51,15 +54,17 @@ class DataProcessor:
                     frame_data[col] = tuple(det["bottom_center"])
                     has_person = True
             
-            if "Ball" in dets and dets["Ball"]:
-                best = max(dets["Ball"].values(), key=lambda x: x["confidence"])
-                frame_data["Ball"] = tuple(best["bottom_center"])
+            # Process puck
+            if "Puck" in dets and dets["Puck"]:
+                best = max(dets["Puck"].values(), key=lambda x: x["confidence"])
+                frame_data["Puck"] = tuple(best["bottom_center"])
             
             if has_person:
                 data[idx] = frame_data
         
         df = pd.DataFrame(data).T
         
+        # Remove columns with too few detections
         if len(df) > 0:
             thresh = 0.01 * len(df)
             df = df.loc[:, df.notna().sum() >= thresh]
@@ -116,9 +121,9 @@ class DataProcessor:
         df: pd.DataFrame,
         team_mapping: Dict[int, int]
     ) -> Tuple[pd.DataFrame, Dict[int, int]]:
-        # Merge goalkeepers with players if same ID
-        gk_cols = [c for c in df.columns if "Goalkeeper" in c]
-        for col in gk_cols:
+        # Merge goaltenders with players if same ID
+        gt_cols = [c for c in df.columns if "Goaltender" in c]
+        for col in gt_cols:
             pid = col.split("_")[1]
             pcol = f"Player_{pid}"
             if pcol in df.columns:

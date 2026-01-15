@@ -1,4 +1,4 @@
-"""Team Assignment Module."""
+"""Team Assignment Module for Ice Hockey."""
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 
 
 class TeamAssigner:
-    """Color-based team assignment."""
+    """Color-based team assignment for ice hockey."""
     
     def __init__(self, config):
         self.config = config

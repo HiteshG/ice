@@ -1,5 +1,5 @@
 """
-Football Tracker with Multi-Mode Support
+Ice Hockey Tracker with Multi-Mode Support
 
 Tracking Modes:
 - botsort: Fast, uses ReID appearance features
@@ -7,12 +7,12 @@ Tracking Modes:
 - hybrid: Both combined, best accuracy
 
 Usage:
-    from football_tracker import FootballTracker, MainConfig
+    from hockey_tracker import HockeyTracker, MainConfig
     
     config = MainConfig()
     config.tracking.mode = "botsort"  # or "sam2_cutie" or "hybrid"
     
-    tracker = FootballTracker(config)
+    tracker = HockeyTracker(config)
     output_dir = tracker.process_video("video.mp4")
 """
 
@@ -30,13 +30,13 @@ from .config import (
     print_mode_comparison
 )
 
-from .main import FootballTracker
+from .main import HockeyTracker
 from .unified_tracker import UnifiedTracker, create_tracker
 from .utils import read_video, write_video, load_tracking_data
 
-__version__ = "2.0.0"
+__version__ = "2.0.0-hockey"
 __all__ = [
-    "FootballTracker",
+    "HockeyTracker",
     "MainConfig",
     "TrackingConfig",
     "UnifiedTracker",

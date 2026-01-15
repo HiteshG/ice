@@ -1,4 +1,4 @@
-"""Utility functions."""
+"""Utility functions for ice hockey tracking."""
 import cv2
 import os
 import json
@@ -63,6 +63,7 @@ def save_tracking_data(
     
     # Metadata
     meta = {
+        "sport": "ice_hockey",
         "fps": fps,
         "num_frames": len(df),
         "team_mapping": {str(k): int(v) for k, v in team_mapping.items()}
@@ -99,8 +100,8 @@ def save_tracking_data(
             if pd.isna(val):
                 continue
             
-            if col == "Ball":
-                det = {"id": "Ball", "type": "Ball", "x": float(val[0]), "y": float(val[1])}
+            if col == "Puck":
+                det = {"id": "Puck", "type": "Puck", "x": float(val[0]), "y": float(val[1])}
             else:
                 parts = col.split("_")
                 oid = int(parts[1])
@@ -161,7 +162,7 @@ def print_summary(df: pd.DataFrame, team_mapping: Dict[int, int], fps: int):
     duration = len(df) / fps
     print(f"Duration: {duration:.1f}s ({len(df)} frames)")
     
-    players = [c for c in df.columns if "Player" in c or "Goalkeeper" in c]
+    players = [c for c in df.columns if "Player" in c or "Goaltender" in c]
     print(f"Players: {len(players)}")
     
     teams = {}
@@ -173,8 +174,8 @@ def print_summary(df: pd.DataFrame, team_mapping: Dict[int, int], fps: int):
     for tid, count in sorted(teams.items()):
         print(f"  Team {tid}: {count}")
     
-    if "Ball" in df.columns:
-        ball_frames = df["Ball"].notna().sum()
-        print(f"Ball: {ball_frames}/{len(df)} frames ({100*ball_frames/len(df):.1f}%)")
+    if "Puck" in df.columns:
+        puck_frames = df["Puck"].notna().sum()
+        print(f"Puck: {puck_frames}/{len(df)} frames ({100*puck_frames/len(df):.1f}%)")
     
     print("="*50)

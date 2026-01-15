@@ -1,6 +1,6 @@
 """
-Object Detector Module.
-Wraps YOLO for detecting players, goalkeepers, and ball.
+Object Detector Module for Ice Hockey
+Wraps YOLO for detecting players, goaltenders, and puck.
 """
 import torch
 import numpy as np
@@ -9,9 +9,10 @@ from typing import Dict, Tuple
 
 
 class ObjectDetector:
-    """YOLO detector wrapper."""
+    """YOLO detector wrapper for ice hockey."""
     
-    TRACK_CLASSES = ["Player", "Goalkeeper"]
+    # Classes that should be tracked (not Puck, which moves too fast)
+    TRACK_CLASSES = ["Player", "Goaltender"]
     
     def __init__(self, config):
         self.config = config
@@ -23,6 +24,8 @@ class ObjectDetector:
         
         self.device = config.device
         self.CLASS_NAMES = config.class_names
+        
+        print(f"Loaded detector with classes: {list(self.CLASS_NAMES.values())}")
     
     def detect(self, frame: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Detect objects in frame."""
@@ -47,11 +50,16 @@ class ObjectDetector:
         class_labels: np.ndarray,
         frame_shape: Tuple[int, int]
     ) -> Dict[str, Dict[int, Dict]]:
-        """Filter and organize detections."""
+        """Filter and organize detections for ice hockey."""
         height, width = frame_shape
-        result = {"Player": {}, "Goalkeeper": {}, "Ball": {}}
+        result = {
+            "Player": {},
+            "Goaltender": {},
+            "Puck": {},
+            "Referee": {}
+        }
         
-        ball_idx = 0
+        puck_idx = 0
         for i in range(len(boxes)):
             class_idx = int(class_labels[i])
             class_name = self.CLASS_NAMES.get(class_idx)
@@ -69,7 +77,11 @@ class ObjectDetector:
             x2 = int(np.clip(x2, 0, width - 1))
             y2 = int(np.clip(y2, 0, height - 1))
             
-            bottom_center = [int((x1 + x2) / 2), y2]
+            # For puck, use center point instead of bottom center
+            if class_name == "Puck":
+                bottom_center = [int((x1 + x2) / 2), int((y1 + y2) / 2)]
+            else:
+                bottom_center = [int((x1 + x2) / 2), y2]
             
             detection = {
                 "bbox": [x1, y1, x2, y2],
@@ -77,9 +89,9 @@ class ObjectDetector:
                 "bottom_center": bottom_center
             }
             
-            if class_name == "Ball":
-                result[class_name][ball_idx] = detection
-                ball_idx += 1
+            if class_name == "Puck":
+                result[class_name][puck_idx] = detection
+                puck_idx += 1
             else:
                 result[class_name][i] = detection
         

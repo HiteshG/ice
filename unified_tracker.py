@@ -303,8 +303,9 @@ class UnifiedTracker:
         """
         result = {
             "Player": {},
-            "Goalkeeper": {},
-            "Ball": {}
+            "Goaltender": {},
+            "Puck": {},
+            "Referee": {}
         }
         
         if len(tracks) == 0:
@@ -333,8 +334,11 @@ class UnifiedTracker:
             x2 = int(np.clip(x2, 0, width - 1))
             y2 = int(np.clip(y2, 0, height - 1))
             
-            # Bottom center
-            bottom_center = [int((x1 + x2) / 2), y2]
+            # Bottom center (or center for puck)
+            if class_name == "Puck":
+                bottom_center = [int((x1 + x2) / 2), int((y1 + y2) / 2)]
+            else:
+                bottom_center = [int((x1 + x2) / 2), y2]
             
             # Get mask if available
             mask = self.current_masks.get(track_id)

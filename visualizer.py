@@ -1,5 +1,5 @@
 """
-Visualization Module with Mask Support.
+Visualization Module with Mask Support for Ice Hockey.
 """
 import cv2
 import numpy as np
@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple, Optional
 
 
 class Visualizer:
-    """Draws tracking results with optional mask overlays."""
+    """Draws tracking results with optional mask overlays for ice hockey."""
     
     def __init__(self, config):
         self.config = config
@@ -27,8 +27,8 @@ class Visualizer:
         if masks and self.config.show_masks:
             annotated = self._draw_masks(annotated, masks, team_mapping)
         
-        # Draw players/goalkeepers
-        for class_name in ["Player", "Goalkeeper"]:
+        # Draw players/goaltenders
+        for class_name in ["Player", "Goaltender"]:
             if class_name not in detections:
                 continue
             
@@ -38,8 +38,8 @@ class Visualizer:
                 is_occluded = det.get("is_occluded", False)
                 
                 # Color
-                if class_name == "Goalkeeper":
-                    color = self.config.goalkeeper_color
+                if class_name == "Goaltender":
+                    color = self.config.goaltender_color
                 elif is_occluded:
                     color = self.config.occlusion_color
                 else:
@@ -66,12 +66,13 @@ class Visualizer:
                     cv2.putText(annotated, str(obj_id), (x-10, y+5),
                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
         
-        # Draw ball
-        if self.config.show_ball and "Ball" in detections:
-            for ball_det in detections["Ball"].values():
-                x, y = ball_det["bottom_center"]
-                pts = np.array([(x, y-20), (x-5, y-30), (x+5, y-30)])
-                cv2.drawContours(annotated, [pts], 0, self.config.ball_color, -1)
+        # Draw puck
+        if self.config.show_puck and "Puck" in detections:
+            for puck_det in detections["Puck"].values():
+                x, y = puck_det["bottom_center"]
+                # Draw puck as a circle
+                cv2.circle(annotated, (x, y), 8, self.config.puck_color, -1)
+                cv2.circle(annotated, (x, y), 10, self.config.puck_color, 2)
         
         return annotated
     
@@ -124,17 +125,18 @@ class Visualizer:
             
             x, y = int(val[0]), int(val[1])
             
-            if col == "Ball":
-                if self.config.show_ball:
-                    pts = np.array([(x, y-20), (x-5, y-30), (x+5, y-30)])
-                    cv2.drawContours(annotated, [pts], 0, self.config.ball_color, -1)
+            if col == "Puck":
+                if self.config.show_puck:
+                    # Draw puck as a circle
+                    cv2.circle(annotated, (x, y), 8, self.config.puck_color, -1)
+                    cv2.circle(annotated, (x, y), 10, self.config.puck_color, 2)
             else:
                 parts = col.split("_")
                 obj_type = parts[0]
                 obj_id = int(parts[1])
                 
-                if obj_type == "Goalkeeper":
-                    color = self.config.goalkeeper_color
+                if obj_type == "Goaltender":
+                    color = self.config.goaltender_color
                 else:
                     team_id = team_mapping.get(obj_id, 0)
                     color = self.config.team_colors.get(team_id, (255,255,255))

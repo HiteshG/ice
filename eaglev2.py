@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-EagleV2 - Football Tracker with Multi-Mode Support
+EagleV2 - Ice Hockey Tracker with Multi-Mode Support
 
 Tracking Modes:
 ┌────────────────┬───────────┬─────────────┬───────────┬────────────┐
@@ -65,7 +65,7 @@ print("\n✅ Repository cloned!")
 # ============================================================================
 
 MODEL_PATH = "/content/yolov11l.pt"
-VIDEO_PATH = "/content/clip_2.mp4"
+VIDEO_PATH = "/content/hockey_clip.mp4"  # Changed from clip_2.mp4
 
 # Get video info
 import cv2
@@ -119,12 +119,15 @@ CUTIE_MODEL = "cutie-base"  # or "cutie-small"
 CUTIE_MEM_EVERY = 5
 MAX_LOST_FRAMES = 30
 
-# Class names (adjust for your YOLO model)
+# Ice Hockey Class names
 CLASS_NAMES = {
-    0: "Ball",
-    1: "Goalkeeper",
-    2: "Player",
-    3: "Referee"
+    0: "Center Ice",
+    1: "Faceoff",
+    2: "Goalpost",
+    3: "Goaltender",
+    4: "Player",
+    5: "Puck",
+    6: "Referee"
 }
 
 # ============================================================================
@@ -167,6 +170,7 @@ print("="*60)
 print(f"""
 📹 Video: {os.path.basename(VIDEO_PATH)}
 🎯 Model: {os.path.basename(MODEL_PATH)}
+🏒 Sport: Ice Hockey
 
 🔧 TRACKING MODE: {TRACKING_MODE.upper()}
 """)
@@ -213,7 +217,7 @@ print("\n✅ Ready to process!")
 # CELL 5: PROCESS VIDEO
 # ============================================================================
 
-from main import FootballTracker
+from main import HockeyTracker
 import time
 
 print(f"\n🚀 Starting [{TRACKING_MODE.upper()}] tracking...")
@@ -222,7 +226,7 @@ print("="*60 + "\n")
 start_time = time.time()
 
 try:
-    tracker = FootballTracker(config)
+    tracker = HockeyTracker(config)
     output_dir = tracker.process_video(VIDEO_PATH)
     
     elapsed = time.time() - start_time
@@ -243,9 +247,10 @@ try:
 except Exception as e:
     print(f"\n❌ ERROR: {e}")
     print("\n📋 Troubleshooting:")
-    print("   1. Try mode='botsort' (fastest, most stable)")
-    print("   2. Reduce FPS")
-    print("   3. Use smaller models")
+    print("   1. Check if your model detects the ice hockey classes correctly")
+    print("   2. Try mode='botsort' (fastest, most stable)")
+    print("   3. Reduce FPS or confidence threshold")
+    print("   4. Use smaller models")
     import traceback
     traceback.print_exc()
     raise
@@ -299,6 +304,7 @@ else:
 
 print("📈 TRACKING STATISTICS")
 print("="*60)
+print(f"Sport: {metadata.get('sport', 'ice_hockey').upper()}")
 print(f"Mode: {tracking_info.get('tracking_mode', TRACKING_MODE).upper()}")
 print(f"Frames: {metadata['num_frames']}")
 print(f"FPS: {metadata['fps']}")
@@ -348,12 +354,13 @@ for mode in MODES_TO_TEST:
     # Create config for this mode
     test_config = get_colab_config(mode=mode)
     test_config.detector.model_path = MODEL_PATH
+    test_config.detector.class_names = CLASS_NAMES
     test_config.fps = PROCESSING_FPS
     test_config.output_dir = f"output_{mode}"
     
     # Process
     start = time.time()
-    tracker = FootballTracker(test_config)
+    tracker = HockeyTracker(test_config)
     out_dir = tracker.process_video(VIDEO_PATH)
     elapsed = time.time() - start
     

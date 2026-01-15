@@ -1,5 +1,5 @@
 """
-Configuration with Tracking Mode Selection
+Configuration with Tracking Mode Selection for Ice Hockey
 Supports switching between: botsort, sam2_cutie, hybrid
 """
 from dataclasses import dataclass, field
@@ -30,12 +30,15 @@ class DetectorConfig:
             self.device = get_device()
         
         if self.class_names is None:
+            # Ice Hockey specific classes
             self.class_names = {
-                0: "Player",
-                1: "Goalkeeper", 
-                2: "Ball",
-                3: "Referee",
-                4: "Staff"
+                0: "Center Ice",
+                1: "Faceoff",
+                2: "Goalpost",
+                3: "Goaltender",
+                4: "Player",
+                5: "Puck",
+                6: "Referee"
             }
 
 
@@ -108,6 +111,7 @@ class TeamAssignerConfig:
     
     def __post_init__(self):
         if self.color_ranges is None:
+            # Ice hockey typically has more distinct colors
             self.color_ranges = {
                 "red": [(0, 100, 100), (10, 255, 255)],
                 "red2": [(160, 100, 100), (179, 255, 255)],
@@ -138,13 +142,13 @@ class VisualizerConfig:
     """Configuration for visualization."""
     show_ids: bool = True
     show_bboxes: bool = True
-    show_ball: bool = True
+    show_puck: bool = True  # Changed from show_ball
     show_masks: bool = False  # Show segmentation mask overlays
     mask_alpha: float = 0.3
     
     team_colors: dict = None
-    goalkeeper_color: tuple = (0, 255, 0)
-    ball_color: tuple = (0, 255, 0)
+    goaltender_color: tuple = (0, 255, 0)  # Changed from goalkeeper_color
+    puck_color: tuple = (0, 255, 0)  # Changed from ball_color
     occlusion_color: tuple = (0, 165, 255)  # Orange
     
     def __post_init__(self):
@@ -159,7 +163,7 @@ class VisualizerConfig:
 class MainConfig:
     """Main configuration combining all components."""
     detector: DetectorConfig = None
-    tracking: TrackingConfig = None  # NEW: Unified tracking config
+    tracking: TrackingConfig = None
     team_assigner: TeamAssignerConfig = None
     processor: ProcessorConfig = None
     visualizer: VisualizerConfig = None

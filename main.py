@@ -1,5 +1,5 @@
 """
-Football Tracker Main Pipeline
+Ice Hockey Tracker Main Pipeline
 Supports 3 tracking modes: botsort, sam2_cutie, hybrid
 """
 import os
@@ -10,9 +10,9 @@ from typing import List, Dict, Optional
 import numpy as np
 
 
-class FootballTracker:
+class HockeyTracker:
     """
-    Main tracking pipeline with mode switching support.
+    Main tracking pipeline with mode switching support for ice hockey.
     
     Modes:
     - botsort: Fast, uses ReID (default)
@@ -32,7 +32,7 @@ class FootballTracker:
         self.config = config or MainConfig()
         
         print("\n" + "="*60)
-        print("FOOTBALL TRACKER")
+        print("ICE HOCKEY TRACKER")
         print(f"Tracking Mode: {self.config.tracking.mode.upper()}")
         print("="*60 + "\n")
         
@@ -189,11 +189,11 @@ class FootballTracker:
                 frame.shape[:2]
             )
             
-            # Get ball (not tracked)
-            ball_dets = self.detector.filter_detections(
+            # Get puck (not tracked due to speed)
+            puck_dets = self.detector.filter_detections(
                 boxes, confidences, class_labels, frame.shape[:2]
-            ).get("Ball", {})
-            frame_detections["Ball"] = ball_dets
+            ).get("Puck", {})
+            frame_detections["Puck"] = puck_dets
             
             detections_per_frame.append(frame_detections)
             
@@ -208,6 +208,7 @@ class FootballTracker:
         import json
         
         info = {
+            "sport": "ice_hockey",
             "tracking_mode": self.config.tracking.mode,
             "tracker_stats": self.tracker.get_stats(),
             "has_masks": len(masks_per_frame) > 0 and any(masks_per_frame)
@@ -232,7 +233,7 @@ class FootballTracker:
 def main():
     """CLI entry point."""
     parser = argparse.ArgumentParser(
-        description="Football Player Tracker with Multi-Mode Support",
+        description="Ice Hockey Player Tracker with Multi-Mode Support",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Tracking Modes:
@@ -293,7 +294,7 @@ Examples:
     
     # Run
     try:
-        tracker = FootballTracker(config)
+        tracker = HockeyTracker(config)
         output_dir = tracker.process_video(args.video, args.output_dir)
         
         print("\n" + "="*60)
